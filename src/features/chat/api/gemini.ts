@@ -2,42 +2,25 @@
  * 📄 src/features/chat/api/gemini.ts
  *
  * 概要:
- * Gemini APIとの通信を実際に行う関数。
- * useChatフックからロジックを分離し、API通信の責務を明確化。
+ * 内部APIルートを通じてGemini APIとの通信を行う関数。
+ * APIキーをサーバーサイドで安全に管理し、クライアントサイドでの漏洩を防ぐ。
  */
-import type { Message, GeminiRequestPayload, GeminiResponse } from '@/shared/types/chat.types';
-
-// TODO: next_public で漏洩しているので、APIとして実装する
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`;
+import type { Message } from '@/shared/types/chat.types';
 
 export const postToGemini = async (history: Message[]): Promise<Message> => {
-  const payload: GeminiRequestPayload = {
-    contents: history,
-  };
-
-  const response = await fetch(API_URL, {
+  const response = await fetch('/api/chat', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ history }),
   });
 
   if (!response.ok) {
-    throw new Error(`API request failed with status ${response.status}`);
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `API request failed with status ${response.status}`);
   }
 
-  const data: GeminiResponse = await response.json();
-  
-  if (data.error) {
-    throw new Error(data.error.message);
-  }
-
-  const modelMessage = data.candidates?.[0]?.content;
-
-  if (!modelMessage) {
-    throw new Error('Invalid response format from API');
-  }
-
+  const modelMessage: Message = await response.json();
   return modelMessage;
 };

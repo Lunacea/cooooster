@@ -44,19 +44,25 @@ export function MessageInput({ sendMessage, isLoading }: MessageInputProps) {
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="メッセージを入力... (Shift+Enter で改行)"
+        placeholder={isLoading ? "応答中..." : "メッセージを入力... (Shift+Enter で改行)"}
         disabled={isLoading}
         className="flex-1 min-h-[40px] max-h-32 resize-none"
         rows={1}
       />
-      <Button 
-        type="submit" 
+      <Button
+        type="submit"
         disabled={isLoading || !inputValue.trim()}
         size="icon"
         className="shrink-0"
       >
-        <Send className="h-4 w-4" />
-        <span className="sr-only">送信</span>
+        {isLoading ? (
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+        ) : (
+          <Send className="h-4 w-4" />
+        )}
+        <span className="sr-only">
+          {isLoading ? '送信中...' : '送信'}
+        </span>
       </Button>
     </form>
   );

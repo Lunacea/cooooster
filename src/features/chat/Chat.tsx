@@ -13,14 +13,18 @@ export function Chat() {
   const { messages, isLoading, error, sendMessage } = useChat();
 
   return (
-    <>
-      <ChatHistory messages={messages} isLoading={isLoading} />
-      {error && (
-        <div className="p-4 text-sm text-red-500 border-t dark:border-slate-700">
-          エラー: {error.message}
-        </div>
-      )}
-      <MessageInput sendMessage={sendMessage} isLoading={isLoading} />
-    </>
+    <div className="flex flex-col h-full min-h-0">
+      <div className="flex-1 overflow-hidden min-h-0">
+        <ChatHistory messages={messages} isLoading={isLoading} />
+        {error && (
+          <div className="p-4 text-sm text-red-500 border-t dark:border-slate-700">
+            エラー: {error.message}
+          </div>
+        )}
+      </div>
+      <div className="flex-shrink-0">
+        <MessageInput sendMessage={sendMessage} isLoading={isLoading} />
+      </div>
+    </div>
   );
 }

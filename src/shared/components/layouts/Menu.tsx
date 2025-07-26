@@ -1,6 +1,7 @@
-import { Tabs, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { HomeIcon, MapPinIcon, MessageCircleIcon, GlobeIcon } from "lucide-react";
 import { RegionSelector } from '@/features/map/RegionSelector';
+import { ChatDrawer } from '@/features/chat/components/ChatDrawer';
+import { Button } from "@/shared/components/ui/button";
 
 interface MenuProps {
   selectedRegion: string | null;
@@ -23,22 +24,24 @@ export default function Menu({ selectedRegion, onRegionChange, onRegionCenterCha
       />
 
       <div className="mt-4 pt-4 border-t border-gray-200">
-        <Tabs>
-          <TabsList className="bg-gray-100 w-full">
-            <TabsTrigger value="home" className="flex-1 data-[state=active]:bg-white">
-              <HomeIcon className="h-4 w-4 mr-2" />
-              ホーム
-            </TabsTrigger>
-            <TabsTrigger value="spot" className="flex-1 data-[state=active]:bg-white">
-              <MapPinIcon className="h-4 w-4 mr-2" />
-              スポット
-            </TabsTrigger>
-            <TabsTrigger value="chat" className="flex-1 data-[state=active]:bg-white">
-              <MessageCircleIcon className="h-4 w-4 mr-2" />
-              チャット
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="grid grid-cols-3 gap-2">
+          <Button variant="outline" className="flex items-center justify-center gap-2">
+            <HomeIcon className="h-4 w-4" />
+            ホーム
+          </Button>
+          <Button variant="outline" className="flex items-center justify-center gap-2">
+            <MapPinIcon className="h-4 w-4" />
+            スポット
+          </Button>
+          <ChatDrawer
+            trigger={
+              <Button variant="outline" className="flex items-center justify-center gap-2 w-full">
+                <MessageCircleIcon className="h-4 w-4" />
+                チャット
+              </Button>
+            }
+          />
+        </div>
       </div>
     </div>
   );
