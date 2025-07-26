@@ -97,8 +97,8 @@ export async function GET(request: NextRequest) {
         if (boundariesData.features) {
           allBoundaries.push(...boundariesData.features);
         }
-        if (coastlineData.geometry) {
-          allCoastlines.push(coastlineData);
+        if (coastlineData.geometry && typeof coastlineData.geometry === 'object') {
+          allCoastlines.push(coastlineData as { type: string; properties: unknown; geometry: { coordinates: number[][][] } });
         }
         
         hasValidData = true;
@@ -119,31 +119,31 @@ export async function GET(request: NextRequest) {
     }
 
     // 統合されたデータを作成
-    const combinedBoundaries = {
-      type: 'FeatureCollection',
-      features: allBoundaries
-    };
-
-    const combinedCoastline = {
-      type: 'Feature',
-      properties: {},
-      geometry: {
-        type: 'MultiLineString',
-        coordinates: allCoastlines.flatMap(coastline => (coastline.geometry as { coordinates: number[][][] }).coordinates)
-      }
-    };
-
-    console.log('API: データ取得完了', {
-      boundariesCount: allBoundaries.length,
-      coastlineCount: allCoastlines.length,
+    const responseData = {
+      boundaries: {
+        type: 'FeatureCollection',
+        features: allBoundaries
+      },
+      coastline: {
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'MultiLineString',
+          coordinates: allCoastlines.map(coastline => (coastline.geometry as { coordinates: number[][][] }).coordinates).flat()
+        }
+      },
       prefectures: targetPrefectures
-    });
-
-    return NextResponse.json({
-      boundaries: combinedBoundaries,
-      coastline: combinedCoastline,
-      prefectures: targetPrefectures
-    });
+    };
+    
+    // キャッシュヘッダーを設定（5分間キャッシュ）
+    const response = NextResponse.json(responseData);
+    response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=300');
+    
+    // ETagはASCII文字のみ許可のため、ハッシュを使用
+    const etagValue = Buffer.from(`${prefectureIso}_${regionName || 'auto'}_${Date.now()}`).toString('base64');
+    response.headers.set('ETag', `"${etagValue}"`);
+    
+    return response;
 
   } catch (error) {
     console.error('API: エラーが発生しました:', error);
