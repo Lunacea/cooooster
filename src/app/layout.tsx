@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Header from "@/shared/components/layouts/Header";
+import { Playwrite_AU_QLD } from "next/font/google";
+import Menu from "@/shared/components/layouts/Menu";
+
+const playwrite = Playwrite_AU_QLD({
+  weight: ['400'],
+  variable: '--font-playwrite',
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,10 +32,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <Header font={playwrite.className} />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <Menu />
       </body>
     </html>
   );
