@@ -16,6 +16,8 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@supabase/supabase-js": "^2.52.1",
     "@types/leaflet": "^1.9.20",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "dotenv": "^17.2.1",
     "drizzle-orm": "^0.44.3",
     "leaflet": "^1.9.4",
@@ -30,8 +32,8 @@
     "react-slot": "^0.1.2"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
     "@cloudflare/next-on-pages": "^1.6.1",
+    "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -42,6 +44,7 @@
     "eslint-config-next": "15.4.4",
     "tailwindcss": "^4",
     "tsx": "^4.20.3",
+    "tw-animate-css": "^1.3.6",
     "typescript": "^5"
   },
   "packageManager": "bun@1.2.17",
