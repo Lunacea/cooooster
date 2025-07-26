@@ -6,17 +6,16 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  deployments: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
@@ -26,7 +25,7 @@ jobs:
         run: bun install
         
       - name: Build project
-        run: bun run build:worker
+        run: bun run pages:build
         
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
