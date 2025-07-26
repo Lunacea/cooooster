@@ -4,8 +4,11 @@
  * 概要:
  * 単一のチャットメッセージを表示するコンポーネント。
  * sharedからfeaturesに移動。チャット機能に特化した部品であることを明確化。
+ * shadcn/uiのAvatarとCardコンポーネントを使用して改善。
  */
 import { User, Bot } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
+import { Card, CardContent } from '@/shared/components/ui/card';
 
 type ChatMessageProps = {
   role: 'user' | 'model';
@@ -18,23 +21,29 @@ export function ChatMessage({ role, children }: ChatMessageProps) {
   return (
     <div className={`flex items-start gap-4 p-4 ${isUser ? 'justify-end' : ''}`}>
       {!isUser && (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700">
-          <Bot className="h-5 w-5 text-slate-600 dark:text-slate-300" />
-        </div>
+        <Avatar className="flex-shrink-0">
+          <AvatarImage src="" alt="Bot" />
+          <AvatarFallback className="bg-slate-200 dark:bg-slate-700">
+            <Bot className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+          </AvatarFallback>
+        </Avatar>
       )}
-      <div
-        className={`max-w-[75%] rounded-lg p-3 text-sm ${
-          isUser
-            ? 'bg-blue-600 text-white'
-            : 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-50'
-        }`}
-      >
-        {children}
-      </div>
-       {isUser && (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700">
-          <User className="h-5 w-5 text-slate-600 dark:text-slate-300" />
-        </div>
+      <Card className={`max-w-[75%] ${
+        isUser
+          ? 'bg-blue-600 text-white border-blue-600'
+          : 'bg-slate-100 dark:bg-slate-800'
+      }`}>
+        <CardContent className="p-3 text-sm">
+          {children}
+        </CardContent>
+      </Card>
+      {isUser && (
+        <Avatar className="flex-shrink-0">
+          <AvatarImage src="" alt="User" />
+          <AvatarFallback className="bg-slate-200 dark:bg-slate-700">
+            <User className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+          </AvatarFallback>
+        </Avatar>
       )}
     </div>
   );

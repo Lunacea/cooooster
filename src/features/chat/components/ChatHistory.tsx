@@ -3,11 +3,11 @@
  *
  * 概要:
  * チャットの履歴を表示するコンポーネント。（旧MessageList.tsx）
- * ローディング表示に`LoadingSpinner`コンポーネントを利用。
+ * ローディング表示に`Skeleton`コンポーネントを利用。
  */
 import * as React from 'react';
 import { ChatMessage } from './ChatMessage';
-import { LoadingSpinner } from '@/shared/components/ui/LoadingSpinner';
+import { Skeleton } from '@/shared/components/ui/skeleton';
 import type { Message } from '@/shared/types/chat.types';
 
 type ChatHistoryProps = {
@@ -37,7 +37,10 @@ export function ChatHistory({ messages, isLoading }: ChatHistoryProps) {
       ))}
       {isLoading && (
         <ChatMessage role="model">
-          <LoadingSpinner />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-[90%]" />
+            <Skeleton className="h-4 w-[60%]" />
+          </div>
         </ChatMessage>
       )}
       <div ref={messagesEndRef} />
