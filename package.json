@@ -13,16 +13,21 @@
     "pages:build": "bun install && bun run build && bun x @cloudflare/next-on-pages"
   },
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.3",
     "@supabase/supabase-js": "^2.52.1",
     "@types/leaflet": "^1.9.20",
     "dotenv": "^17.2.1",
     "drizzle-orm": "^0.44.3",
     "leaflet": "^1.9.4",
+    "leaflet-defaulticon-compatibility": "^0.1.2",
+    "lucide-react": "^0.525.0",
     "next": "15.4.4",
+    "overpass-ts": "^4.3.8",
     "postgres": "^3.4.7",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-leaflet": "^5.0.0"
+    "react-leaflet": "^5.0.0",
+    "react-slot": "^0.1.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
