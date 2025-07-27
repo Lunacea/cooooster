@@ -1,13 +1,30 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// 環境変数が設定されていない場合は早期リターン
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.warn('Supabase環境変数が設定されていません。pins APIは無効です。');
+}
+
+const supabase = supabaseUrl && supabaseServiceKey 
+  ? createClient(supabaseUrl, supabaseServiceKey)
+  : null;
 
 // ピンの投稿
 export async function POST(request: NextRequest) {
   try {
+    // Supabaseが設定されていない場合はエラーを返す
+    if (!supabase) {
+      console.error('API: Supabaseが設定されていません');
+      return NextResponse.json(
+        { error: 'サーバー設定エラーが発生しました' },
+        { status: 500 }
+      );
+    }
+
     const body = await request.json();
     const { title, content, image_url, latitude, longitude, prefecture_code, area_name, distance_to_coastline } = body;
 
@@ -70,6 +87,15 @@ export async function POST(request: NextRequest) {
 // ピンの取得
 export async function GET(request: NextRequest) {
   try {
+    // Supabaseが設定されていない場合はエラーを返す
+    if (!supabase) {
+      console.error('API: Supabaseが設定されていません');
+      return NextResponse.json(
+        { error: 'サーバー設定エラーが発生しました' },
+        { status: 500 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const prefecture = searchParams.get('prefecture');
     const area = searchParams.get('area');

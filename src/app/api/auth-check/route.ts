@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createSupabaseClient } from '@/shared/libs/supabase'
+import { createServerClient } from '@/shared/libs/supabase'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createSupabaseClient()
+    const supabase = createServerClient()
+    
+    if (!supabase) {
+      console.error('API: Supabaseが設定されていません');
+      return NextResponse.json(
+        { error: 'サーバー設定エラーが発生しました' },
+        { status: 500 }
+      );
+    }
     
     // Authorization headerからトークンを取得
     const authHeader = request.headers.get('authorization')

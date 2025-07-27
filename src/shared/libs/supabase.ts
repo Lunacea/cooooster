@@ -12,7 +12,8 @@ export const createServerClient = () => {
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   
   if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Supabase環境変数が設定されていません')
+    console.warn('Supabase環境変数が設定されていません')
+    return null
   }
   
   return createClient(supabaseUrl, supabaseServiceKey)
