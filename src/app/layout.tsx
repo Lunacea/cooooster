@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "@/shared/components/layouts/Header";
+import { ClientHeader } from "@/shared/components/layouts/ClientHeader";
 import { Playwrite_AU_QLD } from "next/font/google";
 import { Toaster } from "@/shared/components/ui/sonner";
-import { AuthProvider } from "@/shared/contexts/AuthContext";
+import { ClientAuthProvider } from "@/shared/components/providers/ClientAuthProvider";
 
 const playwrite = Playwrite_AU_QLD({
   weight: ['400'],
@@ -35,17 +35,18 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning={true}
       >
-        <AuthProvider>
+        <ClientAuthProvider>
           <div className="w-screen h-screen overflow-hidden bg-gradient-to-t from-bice-blue-800 to-bice-blue-900 z-0">
             {/* Header */}
             <div className="absolute top-4 left-4 z-99">
-              <Header font={playwrite.className} />
+              <ClientHeader font={playwrite.className} />
             </div>
 
             {children}
           </div>
-        </AuthProvider>
+        </ClientAuthProvider>
 
         <Toaster />
       </body>
