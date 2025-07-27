@@ -2,7 +2,34 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, set up your environment variables:
+
+Create a `.env.local` file in the root directory and add your API keys:
+
+```bash
+# Gemini API Key (サーバーサイドでのみ使用)
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# Supabase設定
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+```
+
+**重要**: 
+- APIキーは`NEXT_PUBLIC_`プレフィックスを付けずに設定してください。これにより、クライアントサイドでの漏洩を防ぎます。
+- Supabaseの設定は、Supabaseプロジェクトのダッシュボードから取得できます。
+
+### Supabase設定手順
+
+1. [Supabase](https://supabase.com)でアカウントを作成し、新しいプロジェクトを作成します
+2. プロジェクトの設定 > API から以下を取得します：
+   - Project URL
+   - anon public key
+   - service_role key
+3. 上記の値を`.env.local`ファイルに設定します
+
+Then, run the development server:
 
 ```bash
 npm run dev
