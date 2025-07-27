@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/shared/components/layouts/Header";
 import { Playwrite_AU_QLD } from "next/font/google";
+import { Toaster } from "@/shared/components/ui/sonner";
 
 const playwrite = Playwrite_AU_QLD({
   weight: ['400'],
@@ -36,12 +37,14 @@ export default function RootLayout({
       >
         <div className="w-screen h-screen overflow-hidden">
           {/* Header */}
-          <div className="absolute top-4 left-4 z-[9999]">
+          <div className="absolute top-4 left-4 z-99">
             <Header font={playwrite.className} />
           </div>
 
           {children}
         </div>
+
+        <Toaster />
       </body>
     </html>
   );
