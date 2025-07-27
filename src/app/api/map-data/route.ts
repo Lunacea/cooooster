@@ -2,13 +2,31 @@ import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { getRegionFromPrefecture, getRegionByName } from '@/shared/libs/prefectureUtils';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// 環境変数が設定されていない場合は早期リターン
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.warn('Supabase環境変数が設定されていません。map-data APIは無効です。');
+}
+
+const supabase = supabaseUrl && supabaseServiceKey 
+  ? createClient(supabaseUrl, supabaseServiceKey)
+  : null;
+
 const STORAGE_BUCKET = 'map-data';
 
 export async function GET(request: NextRequest) {
   try {
+    // Supabaseが設定されていない場合はエラーを返す
+    if (!supabase) {
+      console.error('API: Supabaseが設定されていません');
+      return NextResponse.json(
+        { error: 'サーバー設定エラーが発生しました' },
+        { status: 500 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const prefectureIso = searchParams.get('prefecture') || 'JP-13';
     const regionName = searchParams.get('region');
@@ -57,8 +75,8 @@ export async function GET(request: NextRequest) {
           continue;
         }
 
-        const boundariesFile = fileList?.find(file => file.name === 'boundaries_processed.geojson');
-        const coastlineFile = fileList?.find(file => file.name === 'coastline_processed.geojson');
+        const boundariesFile = fileList?.find((file: { name: string }) => file.name === 'boundaries_processed.geojson');
+        const coastlineFile = fileList?.find((file: { name: string }) => file.name === 'coastline_processed.geojson');
 
         if (!boundariesFile || !coastlineFile) {
           console.warn(`API: ${prefectureCode} の必要なファイルが見つかりません`);

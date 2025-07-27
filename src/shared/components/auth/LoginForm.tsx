@@ -29,7 +29,7 @@ export function LoginForm() {
       } else {
         toast.success(isSignUp ? 'アカウントを作成しました！' : 'ログインしました！')
       }
-    } catch (err) {
+    } catch {
       toast.error('エラーが発生しました')
     } finally {
       setIsLoading(false)
