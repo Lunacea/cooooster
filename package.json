@@ -10,6 +10,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
+    "create-test-user": "bun run scripts/create-test-user.ts",
+    "get-test-user": "bun run scripts/get-test-user.ts",
     "build:worker": "bun x @cloudflare/next-on-pages",
     "dev:worker": "bun x @cloudflare/next-on-pages --watch",
     "deploy:pages": "bun x wrangler pages deploy .vercel/output/static",

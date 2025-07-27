@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, GeoJSON } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Layer, Path } from 'leaflet'
@@ -17,7 +17,8 @@ import {
   MapControls,
   SampleDataWarning,
   LoadingSpinner,
-  ErrorDisplay
+  ErrorDisplay,
+  AutoCollectionStatus
 } from './components'
 import { boundaryStyles, defaultIcon } from './constants'
 
@@ -31,6 +32,11 @@ export function Map({ selectedRegion: externalSelectedRegion, mapCenter: externa
   const { boundaries, coastline, collectedAreas, isLoading: dataLoading, error: dataError, setCollectedAreas, isUsingSampleData } = useMapData(userPosition, selectedRegion, isPositionResolved)
   const isLoading = positionLoading || dataLoading
 
+  // 自動コレクション用の状態
+  const [isAutoCollecting, setIsAutoCollecting] = useState(false)
+  const lastCheckedPosition = useRef<[number, number] | null>(null)
+  const autoCollectionInterval = useRef<NodeJS.Timeout | null>(null)
+
   // 地方選択のハンドラー
   const handleRegionChange = (regionName: string | null) => {
     setSelectedRegion(regionName)
@@ -43,6 +49,105 @@ export function Map({ selectedRegion: externalSelectedRegion, mapCenter: externa
   const handleRegionCenterChange = (center: [number, number]) => {
     setMapCenter(center)
   }
+
+  // 自動コレクション処理
+  const performAutoCollection = useCallback(async () => {
+    if (!userPosition || !boundaries || !coastline || !coastline.geometry || isUsingSampleData) {
+      return;
+    }
+
+    // 位置が変わっていない場合はスキップ
+    if (lastCheckedPosition.current &&
+      Math.abs(lastCheckedPosition.current[0] - userPosition[0]) < 0.001 &&
+      Math.abs(lastCheckedPosition.current[1] - userPosition[1]) < 0.001) {
+      return;
+    }
+
+    lastCheckedPosition.current = userPosition;
+
+    const userPoint = turf.point([userPosition[1], userPosition[0]]);
+    let currentMunicipality: string | null = null;
+
+    // 現在の市町村を特定
+    for (const feature of boundaries.features) {
+      if (turf.booleanPointInPolygon(userPoint, feature as Feature<Polygon | MultiPolygon>)) {
+        currentMunicipality = feature.properties?.name;
+        break;
+      }
+    }
+
+    if (!currentMunicipality) {
+      return;
+    }
+
+    if (collectedAreas.has(currentMunicipality)) {
+      return;
+    }
+
+    // 海岸線までの最短距離を計算
+    let minDistance = Infinity;
+    for (const lineSegment of coastline.geometry.coordinates) {
+      const line = turf.lineString(lineSegment);
+      const distance = turf.pointToLineDistance(userPoint, line, { units: 'kilometers' });
+      if (distance < minDistance) minDistance = distance;
+    }
+
+    if (minDistance <= 1) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          return;
+        }
+
+        const { error } = await supabase.from('collected_areas').insert({
+          user_id: user.id,
+          area_name: currentMunicipality
+        });
+
+        if (error) {
+          console.error('自動コレクションエラー:', error);
+          return;
+        }
+
+        setCollectedAreas(prev => new Set(prev).add(currentMunicipality!));
+        setMessage(`🎉【${currentMunicipality}】の海岸線を自動コレクションしました！`);
+
+        // 成功メッセージを3秒後にクリア
+        setTimeout(() => {
+          setMessage('位置情報を監視中...');
+        }, 3000);
+      } catch (error) {
+        console.error('自動コレクションの保存に失敗しました:', error);
+      }
+    }
+  }, [userPosition, boundaries, coastline, collectedAreas, setCollectedAreas, isUsingSampleData, supabase]);
+
+  // 自動コレクションの開始/停止
+  useEffect(() => {
+    if (userPosition && boundaries && coastline && !isUsingSampleData && !isLoading) {
+      setIsAutoCollecting(true);
+      setMessage('位置情報を監視中...');
+
+      // 初回チェック
+      performAutoCollection();
+
+      // 30秒間隔で自動チェック
+      autoCollectionInterval.current = setInterval(performAutoCollection, 30000);
+
+      return () => {
+        if (autoCollectionInterval.current) {
+          clearInterval(autoCollectionInterval.current);
+          autoCollectionInterval.current = null;
+        }
+      };
+    } else {
+      setIsAutoCollecting(false);
+      if (autoCollectionInterval.current) {
+        clearInterval(autoCollectionInterval.current);
+        autoCollectionInterval.current = null;
+      }
+    }
+  }, [userPosition, boundaries, coastline, isUsingSampleData, isLoading, performAutoCollection]);
 
   // 地図表示の制御
   useEffect(() => {
@@ -87,7 +192,7 @@ export function Map({ selectedRegion: externalSelectedRegion, mapCenter: externa
     }
   }, [isUsingSampleData]);
 
-  // 位置チェック処理
+  // 手動位置チェック処理（バックアップ用）
   const handleCheckLocation = useCallback(async () => {
     if (!userPosition || !boundaries || !coastline || !coastline.geometry) {
       setMessage('データがまだ準備できていません。');
@@ -219,6 +324,12 @@ export function Map({ selectedRegion: externalSelectedRegion, mapCenter: externa
           {/* サンプルデータ使用時の警告表示 */}
           <SampleDataWarning isUsingSampleData={isUsingSampleData} />
 
+          {/* 自動コレクション状態表示 */}
+          <AutoCollectionStatus
+            isActive={isAutoCollecting}
+            isCollecting={isAutoCollecting}
+          />
+
           <MapContainer
             center={positionToDisplay}
             zoom={userPosition ? 9 : MAP_CONFIG.DEFAULT_ZOOM}
@@ -257,13 +368,16 @@ export function Map({ selectedRegion: externalSelectedRegion, mapCenter: externa
             )}
           </MapContainer>
 
-          <div className="animate-in slide-in-from-bottom-4 duration-500 delay-500">
-            <CheckLocationButton
-              onClick={handleCheckLocation}
-              disabled={isLoading || !userPosition || !boundaries || isUsingSampleData}
-              isLoading={isLoading}
-            />
-          </div>
+          {/* 自動コレクションが無効な場合のみ手動ボタンを表示 */}
+          {!isAutoCollecting && (
+            <div className="animate-in slide-in-from-bottom-4 duration-500 delay-500">
+              <CheckLocationButton
+                onClick={handleCheckLocation}
+                disabled={isLoading || !userPosition || !boundaries || isUsingSampleData}
+                isLoading={isLoading}
+              />
+            </div>
+          )}
 
           <div className="animate-in slide-in-from-bottom-4 duration-500 delay-600">
             <StatusMessage
