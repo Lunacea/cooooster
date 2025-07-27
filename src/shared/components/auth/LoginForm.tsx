@@ -20,16 +20,16 @@ export function LoginForm() {
     setIsLoading(true)
 
     try {
-      const { error } = isSignUp
+      const result = isSignUp
         ? await signUp(email, password)
         : await signIn(email, password)
 
-      if (error) {
-        toast.error(error.message)
+      if (result.error) {
+        toast.error(result.error.message)
       } else {
         toast.success(isSignUp ? 'アカウントを作成しました！' : 'ログインしました！')
       }
-    } catch (error) {
+    } catch (err) {
       toast.error('エラーが発生しました')
     } finally {
       setIsLoading(false)

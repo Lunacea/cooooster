@@ -1,10 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+// 環境変数が設定されていない場合は早期リターン
+if (!supabaseUrl || !supabaseKey) {
+  console.warn('Supabase環境変数が設定されていません。アップロード機能は無効です。');
+}
+
+const supabase = supabaseUrl && supabaseKey 
+  ? createClient(supabaseUrl, supabaseKey)
+  : null;
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,7 +44,7 @@ export async function POST(request: NextRequest) {
     console.log('画像アップロード開始:', file.name);
 
     // Supabase Storageが利用できない場合のフォールバック
-    if (!supabaseUrl || !supabaseKey) {
+    if (!supabase) {
       console.log('Supabase設定が不完全です。Base64エンコードを使用します。');
       
       // ファイルをBase64エンコード
@@ -57,7 +64,7 @@ export async function POST(request: NextRequest) {
     const fileName = `pins/${timestamp}.${fileExtension}`;
 
     // Supabase Storageにアップロード
-    const { data, error } = await supabase.storage
+    const { data, error } = await supabase!.storage
       .from('images')
       .upload(fileName, file, {
         cacheControl: '3600',
@@ -91,7 +98,7 @@ export async function POST(request: NextRequest) {
     console.log('画像アップロード成功:', data);
 
     // 公開URLを取得
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = supabase!.storage
       .from('images')
       .getPublicUrl(fileName);
 
