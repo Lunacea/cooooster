@@ -14,9 +14,12 @@ GEMINI_API_KEY=your_gemini_api_key_here
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# データベース接続（Drizzle用）
+DATABASE_URL=your_supabase_database_url
 ```
 
-**重要**: 
+**重要**:
 - APIキーは`NEXT_PUBLIC_`プレフィックスを付けずに設定してください。これにより、クライアントサイドでの漏洩を防ぎます。
 - Supabaseの設定は、Supabaseプロジェクトのダッシュボードから取得できます。
 
@@ -28,6 +31,33 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
    - anon public key
    - service_role key
 3. 上記の値を`.env.local`ファイルに設定します
+
+### データベースセットアップ
+
+1. **SQLエディタを使用する場合:**
+   - Supabaseダッシュボードの「SQL Editor」を開きます
+   - `supabase-schema.sql`ファイルの内容をコピーして実行します
+
+2. **Supabase CLIを使用する場合:**
+   ```bash
+   # Supabase CLIをインストール
+   npm install -g supabase
+
+   # プロジェクトを初期化
+   supabase init
+
+   # マイグレーションを実行
+   supabase db push
+   ```
+
+3. **Drizzleを使用する場合:**
+   ```bash
+   # マイグレーションファイルを生成
+   bun run db:generate
+
+   # データベースにプッシュ
+   bun run db:push
+   ```
 
 Then, run the development server:
 

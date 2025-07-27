@@ -278,11 +278,22 @@ export function useMapData(userPosition: Position | null, selectedRegion?: strin
           const { data: { user } } = await supabase.auth.getUser();
           if (user) {
             const { data: userCollections, error } = await supabase.from('collected_areas').select('area_name').eq('user_id', user.id);
-            if (error) throw error;
-            setCollectedAreas(new Set((userCollections ?? []).map((item: UserCollection) => item.area_name)));
+            if (error) {
+              console.error('コレクションデータ取得エラー:', error);
+              // テーブルが存在しない場合は空のセットを設定
+              if (error.code === '42P01') {
+                console.warn('collected_areasテーブルが存在しません。データベースのセットアップを確認してください。');
+                setCollectedAreas(new Set());
+              } else {
+                throw error;
+              }
+            } else {
+              setCollectedAreas(new Set((userCollections ?? []).map((item: UserCollection) => item.area_name)));
+            }
           }
         } catch (error) {
           console.error('コレクションデータの取得に失敗:', error);
+          setCollectedAreas(new Set());
         }
         
         setIsLoading(false);
@@ -305,11 +316,22 @@ export function useMapData(userPosition: Position | null, selectedRegion?: strin
           const { data: { user } } = await supabase.auth.getUser();
           if (user) {
             const { data: userCollections, error } = await supabase.from('collected_areas').select('area_name').eq('user_id', user.id);
-            if (error) throw error;
-            setCollectedAreas(new Set((userCollections ?? []).map((item: UserCollection) => item.area_name)));
+            if (error) {
+              console.error('コレクションデータ取得エラー:', error);
+              // テーブルが存在しない場合は空のセットを設定
+              if (error.code === '42P01') {
+                console.warn('collected_areasテーブルが存在しません。データベースのセットアップを確認してください。');
+                setCollectedAreas(new Set());
+              } else {
+                throw error;
+              }
+            } else {
+              setCollectedAreas(new Set((userCollections ?? []).map((item: UserCollection) => item.area_name)));
+            }
           }
         } catch (error) {
           console.error('コレクションデータの取得に失敗:', error);
+          setCollectedAreas(new Set());
         }
         
         setIsLoading(false);
@@ -378,8 +400,18 @@ export function useMapData(userPosition: Position | null, selectedRegion?: strin
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const { data: userCollections, error } = await supabase.from('collected_areas').select('area_name').eq('user_id', user.id);
-          if (error) throw error;
-          setCollectedAreas(new Set((userCollections ?? []).map((item: UserCollection) => item.area_name)));
+          if (error) {
+            console.error('コレクションデータ取得エラー:', error);
+            // テーブルが存在しない場合は空のセットを設定
+            if (error.code === '42P01') {
+              console.warn('collected_areasテーブルが存在しません。データベースのセットアップを確認してください。');
+              setCollectedAreas(new Set());
+            } else {
+              throw error;
+            }
+          } else {
+            setCollectedAreas(new Set((userCollections ?? []).map((item: UserCollection) => item.area_name)));
+          }
         }
 
         setError(null);

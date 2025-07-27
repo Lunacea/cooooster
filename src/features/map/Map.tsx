@@ -136,8 +136,25 @@ export function Map({ selectedRegion: externalSelectedRegion, mapCenter: externa
           setMessage('コレクションを保存するにはログインが必要です。');
           return;
         }
-        const { error } = await supabase.from('collected_areas').insert({ user_id: user.id, area_name: currentMunicipality });
-        if (error) throw error;
+
+        // データベースエラーの詳細なハンドリング
+        const { error } = await supabase.from('collected_areas').insert({
+          user_id: user.id,
+          area_name: currentMunicipality
+        });
+
+        if (error) {
+          console.error('データベースエラー:', error);
+          if (error.code === '42P01') {
+            setMessage('データベーステーブルが存在しません。管理者に連絡してください。');
+          } else if (error.code === '23505') {
+            setMessage(`【${currentMunicipality}】は既にコレクション済みです。`);
+          } else {
+            setMessage('コレクションの保存に失敗しました。');
+          }
+          return;
+        }
+
         setCollectedAreas(prev => new Set(prev).add(currentMunicipality!));
         setMessage(`🎉【${currentMunicipality}】の海岸線をコレクションしました！`);
       } catch (error) {
