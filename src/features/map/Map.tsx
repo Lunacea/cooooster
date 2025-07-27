@@ -1,131 +1,25 @@
 'use client'
 
 import { useState, useCallback, useEffect, useMemo } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, useMap, GeoJSON } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, GeoJSON } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
-import { Icon, LatLngExpression, Layer, Path } from 'leaflet'
+import { Layer, Path } from 'leaflet'
 import * as turf from '@turf/turf'
 import type { Feature, Polygon, MultiPolygon } from 'geojson'
 import { MAP_CONFIG, TILE_LAYER } from '@/shared/libs/mapConfig'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useMapData } from './useMapData'
 import { useUserPosition } from './useUserPosition'
-import { Button } from '@/shared/components/ui/button'
-import { Card, CardContent } from '@/shared/components/ui/card'
-import { NavigationIcon } from 'lucide-react'
-
-// マーカーアイコン設定
-const defaultIcon = new Icon({
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-// 地図ビュー変更コンポーネント
-function ChangeView({ center, zoom }: { center: LatLngExpression, zoom: number }) {
-  const map = useMap();
-  useEffect(() => {
-    map.setView(center, zoom);
-  }, [map, center, zoom]);
-  return null;
-}
-
-// 境界線のスタイル設定
-const boundaryStyles = {
-  default: {
-    color: '#22c55e', // 緑色（境界線）
-    weight: 1,
-    opacity: 0.6,
-    fillColor: 'transparent', // 塗りつぶしなし
-    fillOpacity: 0
-  },
-  collected: {
-    color: '#059669', // 濃い緑色（コレクション済み）
-    weight: 2,
-    opacity: 0.8,
-    fillColor: '#059669',
-    fillOpacity: 0.2
-  },
-  coastline: {
-    color: '#0ea5e9', // 青色（海岸線）
-    weight: 2,
-    opacity: 0.8,
-    fillColor: 'transparent',
-    fillOpacity: 0
-  }
-} as const;
-
-// ステータスメッセージコンポーネント
-const StatusMessage = ({ message }: { message: string }) => (
-  <div className="absolute bottom-4 left-4 z-[99] max-w-md">
-    <Card className="shadow-lg">
-      <CardContent className="p-3">
-        <p className="text-sm text-gray-700">{message}</p>
-      </CardContent>
-    </Card>
-  </div>
-);
-
-// 位置チェックボタン
-const CheckLocationButton = ({ onClick, disabled, isLoading }: { onClick: () => void; disabled: boolean; isLoading: boolean }) => (
-  <div className="absolute bottom-4 right-4 z-[99]">
-    <Button
-      onClick={onClick}
-      disabled={disabled}
-      className="shadow-lg"
-      size="lg"
-    >
-      {isLoading ? (
-        <div className="flex items-center gap-2">
-          <div className="relative w-4 h-4">
-            <svg className="w-full h-full animate-spin" viewBox="0 0 16 16">
-              <g transform="translate(8, 8)">
-                <polygon points="0,-3 2.6,1.5 -2.6,1.5" fill="#0071b0" opacity="0.8" transform="rotate(0)" />
-                <polygon points="0,-3 2.6,1.5 -2.6,1.5" fill="#ff8811" opacity="0.6" transform="rotate(120)" />
-                <polygon points="0,-3 2.6,1.5 -2.6,1.5" fill="#9dd9d2" opacity="0.4" transform="rotate(240)" />
-              </g>
-            </svg>
-          </div>
-          処理中...
-        </div>
-      ) : (
-        <div className="flex items-center gap-2">
-          <NavigationIcon className="h-4 w-4" />
-          位置チェック
-        </div>
-      )}
-    </Button>
-  </div>
-);
-
-// 拡大縮小ボタンコンポーネント
-const ZoomControls = () => {
-  const map = useMap();
-
-  return (
-    <div className="absolute top-24 right-4 z-[99]">
-      <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-1">
-        <div className="flex flex-col gap-1">
-          <button
-            onClick={() => map.zoomIn()}
-            className="w-8 h-8 bg-white border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50 transition-colors"
-          >
-            <span className="text-lg font-bold text-gray-600">+</span>
-          </button>
-          <button
-            onClick={() => map.zoomOut()}
-            className="w-8 h-8 bg-white border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50 transition-colors"
-          >
-            <span className="text-lg font-bold text-gray-600">−</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
+import {
+  ChangeView,
+  StatusMessage,
+  CheckLocationButton,
+  MapControls,
+  SampleDataWarning,
+  LoadingSpinner,
+  ErrorDisplay
+} from './components'
+import { boundaryStyles, defaultIcon } from './constants'
 
 export function Map({ selectedRegion: externalSelectedRegion, mapCenter: externalMapCenter }: { selectedRegion?: string | null; mapCenter?: [number, number] | null }) {
   const supabase = createClientComponentClient()
@@ -136,6 +30,19 @@ export function Map({ selectedRegion: externalSelectedRegion, mapCenter: externa
   const [showMap, setShowMap] = useState(false)
   const { boundaries, coastline, collectedAreas, isLoading: dataLoading, error: dataError, setCollectedAreas, isUsingSampleData } = useMapData(userPosition, selectedRegion, isPositionResolved)
   const isLoading = positionLoading || dataLoading
+
+  // 地方選択のハンドラー
+  const handleRegionChange = (regionName: string | null) => {
+    setSelectedRegion(regionName)
+    if (regionName) {
+      setMessage(`${regionName}の地図データを読み込み中...`)
+    }
+  }
+
+  // 地方の中心座標変更のハンドラー
+  const handleRegionCenterChange = (center: [number, number]) => {
+    setMapCenter(center)
+  }
 
   // 地図表示の制御
   useEffect(() => {
@@ -264,68 +171,28 @@ export function Map({ selectedRegion: externalSelectedRegion, mapCenter: externa
   // クライアントサイドでない場合はローディング表示
   if (!isPositionResolved) {
     return (
-      <div className="w-full h-full flex items-center justify-center animate-in fade-in duration-500">
-        <div className="text-center animate-in slide-in-from-bottom-4 duration-700 delay-200">
-          <div className="relative">
-            <div className="w-16 h-16 mx-auto mb-4">
-              <svg className="w-full h-full animate-spin" viewBox="0 0 64 64">
-                <g transform="translate(32, 32)">
-                  <polygon points="0,-20 17,10 -17,10" fill="#0071b0" opacity="0.8" transform="rotate(0)" />
-                  <polygon points="0,-20 17,10 -17,10" fill="#ff8811" opacity="0.6" transform="rotate(120)" />
-                  <polygon points="0,-20 17,10 -17,10" fill="#9dd9d2" opacity="0.4" transform="rotate(240)" />
-                </g>
-              </svg>
-            </div>
-          </div>
-          <p className="text-gray-600 animate-in fade-in duration-500 delay-300">現在地を取得中...</p>
-          <p className="text-sm text-gray-500 mt-2 animate-in fade-in duration-500 delay-400">位置情報の許可をお願いします</p>
-        </div>
-      </div>
+      <LoadingSpinner
+        title="現在地を取得中..."
+        subtitle="位置情報の許可をお願いします"
+        size="sm"
+      />
     );
   }
 
   // データ読み込み中の場合はローディング表示
   if (isLoading) {
     return (
-      <div className="w-full h-full flex items-center justify-center animate-in fade-in duration-500">
-        <div className="text-center animate-in slide-in-from-bottom-4 duration-700 delay-200">
-          <div className="relative">
-            <div className="w-20 h-20 mx-auto mb-6">
-              <svg className="w-full h-full animate-spin" viewBox="0 0 80 80">
-                <g transform="translate(40, 40)">
-                  <rect x="-12" y="-12" width="24" height="24" fill="#0071b0" opacity="0.6" transform="rotate(0)" />
-                  <rect x="-12" y="-12" width="24" height="24" fill="#ff8811" opacity="0.6" transform="rotate(90)" />
-                  <rect x="-12" y="-12" width="24" height="24" fill="#9dd9d2" opacity="0.6" transform="rotate(180)" />
-                  <rect x="-12" y="-12" width="24" height="24" fill="#fff8f0" opacity="0.6" transform="rotate(270)" />
-                </g>
-              </svg>
-            </div>
-          </div>
-          <p className="text-gray-600 text-lg font-medium animate-in fade-in duration-500 delay-300">地図データを読み込み中...</p>
-          <p className="text-sm text-gray-500 mt-2 animate-in fade-in duration-500 delay-400">しばらくお待ちください</p>
-        </div>
-      </div>
+      <LoadingSpinner
+        title="地図データを読み込み中..."
+        subtitle="しばらくお待ちください"
+        size="md"
+      />
     );
   }
 
   // データエラーがある場合はエラーメッセージを表示
   if (dataError) {
-    return (
-      <div className="w-full h-full flex items-center justify-center animate-in fade-in duration-500">
-        <div className="text-center p-8 animate-in slide-in-from-bottom-4 duration-700 delay-200">
-          <div className="mb-6 animate-in zoom-in duration-500 delay-300">
-            <svg className="w-16 h-16 mx-auto text-red-500" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-bold text-red-600 mb-4 animate-in fade-in duration-500 delay-400">データ読み込みエラー</h2>
-          <p className="text-gray-600 mb-4 animate-in fade-in duration-500 delay-500">{dataError}</p>
-          <p className="text-sm text-gray-500 animate-in fade-in duration-500 delay-600">
-            Supabase Storageに地図データがアップロードされているか確認してください。
-          </p>
-        </div>
-      </div>
-    );
+    return <ErrorDisplay error={dataError} />;
   }
 
   return (
@@ -333,39 +200,21 @@ export function Map({ selectedRegion: externalSelectedRegion, mapCenter: externa
       {showMap && (
         <div className="w-full h-full animate-in fade-in duration-700">
           {/* サンプルデータ使用時の警告表示 */}
-          {isUsingSampleData && (
-            <div className="absolute top-4 left-4 right-4 z-[99] animate-in slide-in-from-top-4 duration-500 delay-300">
-              <Card className="shadow-lg border-yellow-200 bg-yellow-50">
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-yellow-600" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-yellow-800">
-                        サンプルデータを表示中
-                      </p>
-                      <p className="text-xs text-yellow-700 mt-1">
-                        実際の地図データをアップロードしてください。
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+          <SampleDataWarning isUsingSampleData={isUsingSampleData} />
 
           <MapContainer
             center={positionToDisplay}
             zoom={userPosition ? 9 : MAP_CONFIG.DEFAULT_ZOOM}
             scrollWheelZoom={true}
-            className="w-full h-full"
+            className="w-full h-full z-0"
             zoomControl={false}
           >
             <ChangeView center={positionToDisplay} zoom={userPosition ? 9 : MAP_CONFIG.DEFAULT_ZOOM} />
-            <ZoomControls />
+            <MapControls
+              selectedRegion={selectedRegion}
+              onRegionChange={handleRegionChange}
+              onRegionCenterChange={handleRegionCenterChange}
+            />
             <TileLayer
               attribution={TILE_LAYER.attribution}
               url={TILE_LAYER.url}
@@ -400,7 +249,15 @@ export function Map({ selectedRegion: externalSelectedRegion, mapCenter: externa
           </div>
 
           <div className="animate-in slide-in-from-bottom-4 duration-500 delay-600">
-            <StatusMessage message={message} />
+            <StatusMessage
+              message={message}
+              type={
+                message.includes('🎉') ? 'success' :
+                  message.includes('エラー') || message.includes('失敗') ? 'error' :
+                    message.includes('サンプルデータ') ? 'warning' :
+                      'default'
+              }
+            />
           </div>
         </div>
       )}

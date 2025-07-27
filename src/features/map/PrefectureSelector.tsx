@@ -23,7 +23,7 @@ export function PrefectureSelector({ currentPrefecture, onPrefectureChange }: Pr
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border max-h-60 overflow-y-auto z-[1001] min-w-48">
+        <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border max-h-60 overflow-y-auto z-99 min-w-48">
           {prefectures.map((prefecture) => (
             <button
               key={prefecture.code}

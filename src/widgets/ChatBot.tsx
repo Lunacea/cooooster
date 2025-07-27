@@ -10,7 +10,6 @@
 
 import { useChat } from '@/features/chat/hooks/useChat';
 import { Chat } from '@/features/chat/Chat';
-import { Skeleton } from '@/shared/components/ui/skeleton';
 
 export function ChatBot() {
   const { isLoading } = useChat();

@@ -10,11 +10,6 @@ const DynamicMap = dynamic(
   }
 )
 
-interface MapWidgetProps {
-  selectedRegion?: string | null;
-  mapCenter?: [number, number] | null;
-}
-
-export function MapWidget({ selectedRegion, mapCenter }: MapWidgetProps) {
-  return <DynamicMap selectedRegion={selectedRegion} mapCenter={mapCenter} />
+export function MapWidget() {
+  return <DynamicMap />
 }
