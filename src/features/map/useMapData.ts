@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import type { Feature, FeatureCollection, MultiLineString } from 'geojson';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { getPrefectureFromPosition, getPrefectureName, getRegionFromPrefecture, getRegionByName } from '@/shared/libs/prefectureUtils';
@@ -23,6 +23,20 @@ const memoryCache = new Map<string, CacheEntry>();
 
 // キャッシュの有効期限（5分）
 const CACHE_DURATION = 5 * 60 * 1000;
+
+// テストユーザーかどうかを判定する関数
+const checkTestUser = async (): Promise<boolean> => {
+  try {
+    const supabase = createClientComponentClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    return user?.email === 'test@cooooster.com';
+  } catch {
+    return false;
+  }
+};
+
+// 築地の位置情報（テスト用）
+const tsukijiPosition: Position = [35.6654, 139.7704]; // 築地市場付近
 
 // キャッシュキーを生成
 function generateCacheKey(prefecture: string, region?: string | null): string {
@@ -184,6 +198,38 @@ export function useMapData(userPosition: Position | null, selectedRegion?: strin
   const [currentPrefecture, setCurrentPrefecture] = useState<string | null>(null);
   const [currentRegion, setCurrentRegion] = useState<string | null>(null);
   const [displayedPrefectures, setDisplayedPrefectures] = useState<string[]>([]);
+  const [isTestUser, setIsTestUser] = useState(false);
+  const [effectivePosition, setEffectivePosition] = useState<Position | null>(null);
+
+  // テストユーザーの判定
+  useEffect(() => {
+    const checkTestUserStatus = async () => {
+      console.log('useMapData: テストユーザー判定開始');
+      const testUser = await checkTestUser();
+      console.log('useMapData: テストユーザー判定結果:', testUser);
+      setIsTestUser(testUser);
+      
+      if (testUser) {
+        console.log('useMapData: テストユーザーのため、築地の位置情報を使用します。');
+        setEffectivePosition(tsukijiPosition);
+      } else {
+        console.log('useMapData: 通常ユーザーのため、実際の位置情報を使用します。');
+        setEffectivePosition(userPosition);
+      }
+    };
+    
+    checkTestUserStatus();
+  }, [userPosition]); // userPositionを依存関係に追加
+
+  // 有効な位置情報の更新
+  useEffect(() => {
+    console.log('useMapData: 有効な位置情報更新 - isTestUser:', isTestUser, 'userPosition:', userPosition);
+    if (isTestUser) {
+      setEffectivePosition(tsukijiPosition);
+    } else {
+      setEffectivePosition(userPosition);
+    }
+  }, [isTestUser, userPosition]); // tsukijiPositionを依存関係から削除
 
   useEffect(() => {
     // クライアントサイドでのみ実行
@@ -211,11 +257,11 @@ export function useMapData(userPosition: Position | null, selectedRegion?: strin
       }
     }
 
-    // ユーザーの位置情報に基づいて都道府県を決定
-    if (userPosition && !currentPrefecture) {
-      const prefectureCode = getPrefectureFromPosition(userPosition);
+    // 有効な位置情報に基づいて都道府県を決定
+    if (effectivePosition && !currentPrefecture) {
+      const prefectureCode = getPrefectureFromPosition(effectivePosition);
       const prefectureName = getPrefectureName(prefectureCode);
-      console.log(`現在地から都道府県を判定: ${prefectureName} (${prefectureCode})`);
+      console.log(`${isTestUser ? 'テストユーザー' : '現在地'}から都道府県を判定: ${prefectureName} (${prefectureCode})`);
       
       setCurrentPrefecture(prefectureCode);
       
@@ -240,13 +286,13 @@ export function useMapData(userPosition: Position | null, selectedRegion?: strin
       } else {
         setCurrentRegion(null);
       }
-    } else if (!userPosition && !currentPrefecture) {
+    } else if (!effectivePosition && !currentPrefecture) {
       // 位置情報が取得できない場合のみ関東をデフォルトとする
       setCurrentPrefecture('JP-13');
       setCurrentRegion('関東');
       console.log('位置情報が取得できないため、関東をデフォルトとして設定');
     }
-  }, [userPosition, currentPrefecture, selectedRegion, isPositionResolved]);
+  }, [effectivePosition, currentPrefecture, selectedRegion, isPositionResolved, isTestUser]);
 
   useEffect(() => {
     if (!currentPrefecture) return;

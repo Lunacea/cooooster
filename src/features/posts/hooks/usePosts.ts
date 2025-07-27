@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getPosts, getPostsByUser } from '@/features/posts/api/getPosts';
 import type { Post } from '@/features/posts/types/post.types';
 
@@ -10,7 +10,7 @@ export const usePosts = (userId?: string) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -26,11 +26,11 @@ export const usePosts = (userId?: string) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     fetchPosts();
-  }, [userId]);
+  }, [fetchPosts]);
 
   const refresh = () => {
     fetchPosts();

@@ -28,7 +28,7 @@ export function LoadingSpinner({ title, subtitle, size = 'md' }: LoadingSpinnerP
               <g transform={`translate(${spinnerSize[size] / 2}, ${spinnerSize[size] / 2})`}>
                 <polygon points="0,-20 17,10 -17,10" fill="#0071b0" opacity="0.8" transform="rotate(0)" />
                 <polygon points="0,-20 17,10 -17,10" fill="#ff8811" opacity="0.6" transform="rotate(120)" />
-                <polygon points="0,-20 17,10 -17,10" fill="#9dd9d2" opacity="0.4" transform="rotate(240)" />
+                <polygon points="0,-20 17,10 -17,10" fill="#f4d06f" opacity="0.4" transform="rotate(240)" />
               </g>
             </svg>
           </div>

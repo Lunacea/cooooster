@@ -313,6 +313,8 @@ export function getPrefectureFromPosition(position: Position): string {
                      lng >= bounds.west &&
                      lng <= bounds.east;
     
+    console.log(`都道府県判定チェック: ${prefecture.name} (${prefecture.code}) - bounds: [${bounds.south}, ${bounds.north}, ${bounds.west}, ${bounds.east}] - inBounds: ${inBounds}`);
+    
     if (inBounds) {
       console.log(`都道府県判定結果: ${prefecture.name} (${prefecture.code})`);
       return prefecture.code;

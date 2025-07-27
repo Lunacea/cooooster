@@ -1,8 +1,7 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Badge } from '@/shared/components/ui/badge'
-import { Progress } from '@/shared/components/ui/progress'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Badge } from '@/shared/components/ui/badge';
 import { Trophy, Star, Target } from 'lucide-react'
 
 interface RegionProgress {
@@ -61,7 +60,7 @@ export function ProgressChart({ regions, totalCollected, totalAreas, overallPerc
           </div>
           <div className="bg-gray-200 relative h-3 w-full overflow-hidden rounded-full mt-4">
             <div
-              className="bg-bice-blue-500 h-full transition-all duration-300 ease-in-out"
+              className={`bg-bice-blue-500 h-full transition-all duration-300 ease-in-out ${overallPercentage > 0 ? 'w-full' : 'w-0'}`}
               style={{ width: `${overallPercentage}%` }}
             />
           </div>
@@ -98,7 +97,7 @@ export function ProgressChart({ regions, totalCollected, totalAreas, overallPerc
                   </div>
                   <div className="bg-gray-200 relative h-2 w-full overflow-hidden rounded-full">
                     <div
-                      className="bg-bice-blue-500 h-full transition-all duration-300 ease-in-out"
+                      className={`bg-bice-blue-500 h-full transition-all duration-300 ease-in-out ${region.percentage > 0 ? 'w-full' : 'w-0'}`}
                       style={{ width: `${region.percentage}%` }}
                     />
                   </div>
@@ -161,7 +160,7 @@ export function ProgressChart({ regions, totalCollected, totalAreas, overallPerc
           </div>
         </CardContent>
       </Card>
-      <div className="h-24"></div> {/* スクロール用の余白 */}
+      <div className="h-24"></div>
     </div>
   )
 } 

@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { Button } from '@/shared/components/ui/button';
 import { LogOut, User } from 'lucide-react';
-import { toast } from 'sonner';
 
 export default function Header(props: { font: string }) {
   const { user, signOut } = useAuth();
@@ -35,7 +34,7 @@ export default function Header(props: { font: string }) {
 
         {user && (
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="hidden sm:flex items-center gap-2 text-sm text-gray-600">
               <User className="h-4 w-4" />
               <span>{user.email}</span>
             </div>
@@ -46,7 +45,7 @@ export default function Header(props: { font: string }) {
               className="flex items-center gap-1"
             >
               <LogOut className="h-4 w-4" />
-              ログアウト
+              <span className="hidden sm:inline">ログアウト</span>
             </Button>
           </div>
         )}

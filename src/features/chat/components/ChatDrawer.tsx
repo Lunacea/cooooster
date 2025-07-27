@@ -14,6 +14,7 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
+  DrawerDescription,
   DrawerTrigger,
 } from '@/shared/components/ui/drawer';
 import { Chat } from '@/features/chat/Chat';
@@ -34,13 +35,18 @@ export function ChatDrawer({ trigger }: ChatDrawerProps) {
       </DrawerTrigger>
       <DrawerContent className="h-[80vh] flex flex-col">
         <DrawerHeader className="flex items-center justify-between border-b">
-          <DrawerTitle className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            Gemini Chatbot
-            {isLoading && (
-              <span className="text-xs text-gray-500 ml-2">応答中...</span>
-            )}
-          </DrawerTitle>
+          <div>
+            <DrawerTitle className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              Gemini Chatbot
+              {isLoading && (
+                <span className="text-xs text-gray-500 ml-2">応答中...</span>
+              )}
+            </DrawerTitle>
+            <DrawerDescription className="text-sm text-gray-600 mt-1">
+              海岸線に関する質問や情報をチャットで確認できます
+            </DrawerDescription>
+          </div>
           <button
             onClick={() => setIsOpen(false)}
             className="p-1 hover:bg-gray-100 rounded-full transition-colors"

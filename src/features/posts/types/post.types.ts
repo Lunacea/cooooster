@@ -1,5 +1,3 @@
-import type { AreaLocation } from '@/shared/types/location.types';
-
 /**
  * 投稿関連の型定義
  */

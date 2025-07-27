@@ -1,4 +1,5 @@
 import * as React from 'react';
+import Image from 'next/image';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { LikeButton } from '@/features/likes/components/LikeButton';
@@ -39,26 +40,28 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="pt-0">
         <div className="space-y-3">
           <p className="text-sm leading-relaxed whitespace-pre-wrap">
             {post.content}
           </p>
-          
+
           {post.imageUrl && (
             <div className="rounded-md overflow-hidden">
-              <img
+              <Image
                 src={post.imageUrl}
                 alt="投稿画像"
+                width={600}
+                height={400}
                 className="w-full h-auto max-h-96 object-cover"
               />
             </div>
           )}
-          
+
           <div className="flex items-center pt-2">
-            <LikeButton 
-              postId={post.id} 
+            <LikeButton
+              postId={post.id}
               userId={currentUserId}
             />
           </div>

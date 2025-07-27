@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { createSupabaseClient } from '@/shared/libs/supabase'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/shared/components/ui/drawer'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Progress } from '@/shared/components/ui/progress'
 import { Badge } from '@/shared/components/ui/badge'
 import { Skeleton } from '@/shared/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
@@ -115,9 +114,9 @@ export function ProgressDashboard({ trigger }: ProgressDashboardProps) {
       <DrawerTrigger asChild>
         {trigger}
       </DrawerTrigger>
-      <DrawerContent className="max-h-[90vh] overflow-hidden">
-        <div className="mx-auto w-full max-w-2xl">
-          <DrawerHeader className="border-b border-gray-200 bg-white">
+      <DrawerContent className="max-h-[88vh] overflow-hidden">
+        <div className="mx-auto w-full max-w-2xl h-[88vh] flex flex-col">
+          <DrawerHeader className="border-b border-gray-200 bg-white flex-shrink-0">
             <div className="flex items-center justify-between">
               <DrawerTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
                 <Trophy className="h-5 w-5 text-bice-blue-500" />
@@ -133,7 +132,7 @@ export function ProgressDashboard({ trigger }: ProgressDashboardProps) {
               </button>
             </div>
           </DrawerHeader>
-          <div className="overflow-y-auto max-h-[calc(90vh-80px)] p-4 pb-12">
+          <div className="flex-1 overflow-y-auto p-4 pb-12">
             {isLoading ? (
               <div className="space-y-4">
                 <Skeleton className="h-32 w-full" />
@@ -194,7 +193,7 @@ export function ProgressDashboard({ trigger }: ProgressDashboardProps) {
                         </div>
                         <div className="bg-gray-200 relative h-3 w-full overflow-hidden rounded-full">
                           <div
-                            className="bg-bice-blue-500 h-full transition-all duration-300 ease-in-out"
+                            className={`bg-bice-blue-500 h-full transition-all duration-300 ease-in-out ${progressData.progressPercentage > 0 ? 'w-full' : 'w-0'}`}
                             style={{ width: `${progressData.progressPercentage}%` }}
                           />
                         </div>
@@ -226,7 +225,7 @@ export function ProgressDashboard({ trigger }: ProgressDashboardProps) {
                             </div>
                             <div className="bg-gray-200 relative h-2 w-full overflow-hidden rounded-full">
                               <div
-                                className="bg-bice-blue-500 h-full transition-all duration-300 ease-in-out"
+                                className={`bg-bice-blue-500 h-full transition-all duration-300 ease-in-out ${region.percentage > 0 ? 'w-full' : 'w-0'}`}
                                 style={{ width: `${region.percentage}%` }}
                               />
                             </div>

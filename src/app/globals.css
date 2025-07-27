@@ -176,3 +176,89 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* カスタムピンアイコンのスタイル */
+.custom-pin-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.pin-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pin-image {
+  position: relative;
+  z-index: 2;
+  transition: transform 0.2s ease;
+}
+
+.pin-image:hover {
+  transform: scale(1.1);
+}
+
+.pin-shadow {
+  position: absolute;
+  bottom: -8px;
+  width: 20px;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  z-index: 1;
+}
+
+/* ピンポップアップのスタイル */
+.pin-popup .leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.pin-popup .leaflet-popup-tip {
+  background: white;
+}
+
+.pin-popup .leaflet-popup-close-button {
+  color: #6b7280;
+  font-size: 18px;
+  padding: 4px;
+}
+
+.pin-popup .leaflet-popup-close-button:hover {
+  color: #374151;
+}
+
+/* Toastメッセージの位置を左上に固定 */
+[data-sonner-toaster][data-position="top-left"] {
+  top: 6rem !important;
+  left: 1rem !important;
+  right: 1rem !important;
+  bottom: auto !important;
+  z-index: 9999 !important;
+}
+
+[data-sonner-toaster][data-position="top-left"] [data-sonner-toast] {
+  margin-bottom: 0.5rem;
+  max-width: calc(100vw - 2rem) !important;
+  width: auto !important;
+}
+
+@media (min-width: 640px) {
+  [data-sonner-toaster][data-position="top-left"] {
+    right: auto !important;
+  }
+  
+  [data-sonner-toaster][data-position="top-left"] [data-sonner-toast] {
+    max-width: 24rem !important;
+    width: 24rem !important;
+  }
+}
+
+/* 右下のtoastを無効化 */
+[data-sonner-toaster][data-position="bottom-right"],
+[data-sonner-toaster][data-position="bottom-left"],
+[data-sonner-toaster][data-position="top-right"] {
+  display: none !important;
+}
