@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Feature, FeatureCollection, MultiLineString } from 'geojson';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { getPrefectureFromPosition, getPrefectureName, getRegionFromPrefecture, getRegionByName } from '@/shared/libs/prefectureUtils';

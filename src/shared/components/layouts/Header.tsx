@@ -11,12 +11,11 @@ export default function Header(props: { font: string }) {
 
   const handleSignOut = async () => {
     try {
-      await signOut();
-      toast.success('ログアウトしました');
-    } catch (error) {
-      toast.error('ログアウトに失敗しました');
+      await signOut()
+    } catch (err) {
+      console.error('ログアウトエラー:', err)
     }
-  };
+  }
 
   return (
     <header className="p-2 backdrop-blur-md rounded-xl shadow-lg">

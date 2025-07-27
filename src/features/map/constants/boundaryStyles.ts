@@ -8,15 +8,15 @@ export const boundaryStyles = {
     fillOpacity: 0
   },
   collected: {
-    color: '#059669', // 濃い緑色（コレクション済み）
+    color: '#005d8f', // 濃い緑色（コレクション済み）
     weight: 2,
     opacity: 0.8,
-    fillColor: '#059669',
+    fillColor: '#005d8f',
     fillOpacity: 0.2
   },
   coastline: {
     color: '#0ea5e9', // 青色（海岸線）
-    weight: 2,
+    weight: 6,
     opacity: 0.8,
     fillColor: 'transparent',
     fillOpacity: 0

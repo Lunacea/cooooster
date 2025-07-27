@@ -37,7 +37,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <div className="w-screen h-screen overflow-hidden">
+          <div className="w-screen h-screen overflow-hidden bg-gradient-to-t from-bice-blue-800 to-bice-blue-900 z-0">
             {/* Header */}
             <div className="absolute top-4 left-4 z-99">
               <Header font={playwrite.className} />

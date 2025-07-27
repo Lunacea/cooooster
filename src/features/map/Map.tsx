@@ -161,6 +161,30 @@ export function Map({ selectedRegion: externalSelectedRegion, mapCenter: externa
     }
   }, [isLoading, dataError, boundaries, coastline])
 
+  // 地図の初期化エラーを防ぐためのuseEffect
+  useEffect(() => {
+    if (showMap) {
+      // 地図が表示された後にサイズを再計算
+      const timer = setTimeout(() => {
+        try {
+          const mapElement = document.querySelector('.leaflet-container');
+          if (mapElement) {
+            // 地図のサイズを強制的に再計算
+            const mapInstance = (mapElement as HTMLElement & { _leaflet_map?: { invalidateSize: () => void } })._leaflet_map;
+            if (mapInstance && typeof mapInstance.invalidateSize === 'function') {
+              mapInstance.invalidateSize();
+              console.log('地図のサイズを再計算しました');
+            }
+          }
+        } catch (error) {
+          console.warn('地図のサイズ再計算エラー:', error);
+        }
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [showMap]);
+
   // 外部からの地方選択を反映
   useEffect(() => {
     if (externalSelectedRegion !== undefined) {
@@ -336,8 +360,27 @@ export function Map({ selectedRegion: externalSelectedRegion, mapCenter: externa
             scrollWheelZoom={true}
             className="w-full h-full z-0"
             zoomControl={false}
+            // エラーハンドリング
+            whenReady={() => {
+              console.log('地図の準備が完了しました');
+              // 地図の準備が完了したことを確認
+              setTimeout(() => {
+                try {
+                  // 地図のサイズを再計算
+                  const mapElement = document.querySelector('.leaflet-container');
+                  if (mapElement) {
+                    console.log('地図コンテナが見つかりました');
+                  }
+                } catch (error) {
+                  console.warn('地図の初期化エラー:', error);
+                }
+              }, 100);
+            }}
           >
-            <ChangeView center={positionToDisplay} zoom={userPosition ? 9 : MAP_CONFIG.DEFAULT_ZOOM} />
+            <ChangeView
+              center={positionToDisplay}
+              zoom={userPosition ? 9 : MAP_CONFIG.DEFAULT_ZOOM}
+            />
             <MapControls
               selectedRegion={selectedRegion}
               onRegionChange={handleRegionChange}
@@ -348,7 +391,10 @@ export function Map({ selectedRegion: externalSelectedRegion, mapCenter: externa
               url={TILE_LAYER.url}
             />
             {userPosition && (
-              <Marker position={userPosition} icon={defaultIcon}>
+              <Marker
+                position={userPosition}
+                icon={defaultIcon}
+              >
                 <Popup>あなたの現在地</Popup>
               </Marker>
             )}

@@ -1,7 +1,7 @@
 'use client'
 
 import { Badge } from '@/shared/components/ui/badge'
-import { MapPin, CheckCircle, Clock } from 'lucide-react'
+import { CheckCircle, Clock } from 'lucide-react'
 
 interface AutoCollectionStatusProps {
   isActive: boolean
