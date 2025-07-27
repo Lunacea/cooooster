@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/shared/libs/supabase'
 
+export const runtime = 'edge';
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = createServerClient()

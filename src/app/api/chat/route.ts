@@ -8,6 +8,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { Message, GeminiRequestPayload, GeminiResponse } from '@/shared/types/chat.types';
 
+export const runtime = 'edge';
+
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
 export async function POST(request: NextRequest) {
